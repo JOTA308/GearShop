@@ -1,0 +1,5 @@
+Nova Paleta(Laranja, roxo, roxo russo, cinza neve)
+
+<!-- Coolors Palette Widget -->
+      <script src="https://coolors.co/palette-widget/widget.js"></script>
+      <script data-id="029168262640319353">new CoolorsPaletteWidget("029168262640319353", ["e26a50","1c1142","6655a6","d9d7dd"]); </script>
