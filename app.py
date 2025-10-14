@@ -97,5 +97,14 @@ def cadastrar():
 def carrinho():
     return render_template("carrinho.html")
 
+# --- ESQUECI SENHA ---
+@app.route("/senha", methods=["GET", "POST"])
+def senha():
+    if request.method == "POST":
+        email = request.form["email"]
+        # Aqui futuramente pode ir a lógica de envio de e-mail
+        return "Um link de recuperação foi enviado para o e-mail informado (simulação)."
+    return render_template("senha.html")
+
 if __name__ == "__main__":
     app.run(debug=True)

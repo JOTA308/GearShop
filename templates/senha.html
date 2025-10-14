@@ -97,7 +97,7 @@
     <h2>Esqueci minha senha</h2>
     <p>Digite o e-mail cadastrado para receber o link de redefinição de senha.</p>
 
-    <form action="{{ url_for('esqueci_senha') }}" method="post">
+      <form action="{{ url_for('senha') }}" method="post">
       <input type="email" name="email" placeholder="Digite seu e-mail" required>
       <button type="submit">Enviar link de recuperação</button>
     </form>
