@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil - GearShop</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body { background-color: #f5f5f5; font-family: Arial, sans-serif; }
+    .navbar { background-color: #007bff; }
+    .navbar-brand { color: white !important; font-weight: bold; }
+    
+    .profile-container {
+      max-width: 700px;
+      margin: 50px auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .profile-header img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ff6600;
+    }
+
+    .profile-header h3 { margin: 0; }
+
+    .form-control, .btn {
+      border-radius: 8px;
+    }
+
+    .btn-save {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 15px;
+      transition: background 0.3s;
+    }
+
+    .btn-save:hover { background-color: #0065cc; }
+
+    .btn-cadastrar {
+      background-color: #ff6600;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+
+    .btn-cadastrar:hover { background-color: #e55c00; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('home') }}">GEARSHOP</a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light">Login</a>
+      <a href="{{ url_for('carrinho') }}" class="btn btn-outline-light">Carrinho</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Conteúdo do Perfil -->
+<div class="profile-container">
+  <div class="profile-header">
+    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="Avatar do Usuário">
+    <div>
+      <h3>João Silva</h3>
+      <p class="text-muted">joao@email.com</p>
+    </div>
+  </div>
+
+  <!-- Formulário para Editar Perfil -->
+  <form method="POST" action="{{ url_for('perfil') }}">
+    <div class="mb-3">
+      <label class="form-label">Nome</label>
+      <input type="text" class="form-control" name="nome" value="João Silva" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" name="email" value="joao@email.com" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Telefone</label>
+      <input type="text" class="form-control" name="telefone" value="(11) 99999-9999">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Endereço</label>
+      <input type="text" class="form-control" name="endereco" value="Rua Exemplo, 123">
+    </div>
+
+    <!-- Botão Salvar Alterações -->
+    <button type="submit" class="btn-save">Salvar Alterações</button>
+  </form>
+
+  <!-- Botão Cadastrar Produto -->
+  <a href="{{ url_for('cadastrar') }}" class="btn-cadastrar">
+    <i class="bi bi-plus-circle"></i> Cadastrar Produto
+  </a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
