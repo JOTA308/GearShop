@@ -10,7 +10,7 @@
     body { background-color: #f5f5f5; font-family: Arial, sans-serif; }
     .navbar { background-color: #007bff; }
     .navbar-brand { color: white !important; font-weight: bold; }
-    
+
     .profile-container {
       max-width: 700px;
       margin: 50px auto;
@@ -36,10 +36,7 @@
     }
 
     .profile-header h3 { margin: 0; }
-
-    .form-control, .btn {
-      border-radius: 8px;
-    }
+    .form-control, .btn { border-radius: 8px; }
 
     .btn-save {
       background-color: #007bff;
@@ -49,7 +46,6 @@
       margin-top: 15px;
       transition: background 0.3s;
     }
-
     .btn-save:hover { background-color: #0065cc; }
 
     .btn-cadastrar {
@@ -63,7 +59,6 @@
       gap: 8px;
       transition: background 0.3s;
     }
-
     .btn-cadastrar:hover { background-color: #e55c00; }
   </style>
 </head>
@@ -74,7 +69,12 @@
   <div class="container">
     <a class="navbar-brand" href="{{ url_for('home') }}">GEARSHOP</a>
     <div class="ms-auto d-flex gap-2">
-      <a href="{{ url_for('login') }}" class="btn btn-outline-light">Login</a>
+      {% if session.get('usuario') %}
+        <a href="{{ url_for('perfil') }}" class="btn btn-outline-light">Perfil</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Sair</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-outline-light">Login</a>
+      {% endif %}
       <a href="{{ url_for('carrinho') }}" class="btn btn-outline-light">Carrinho</a>
     </div>
   </div>
@@ -85,8 +85,8 @@
   <div class="profile-header">
     <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="Avatar do Usuário">
     <div>
-      <h3>João Silva</h3>
-      <p class="text-muted">joao@email.com</p>
+      <h3>{{ usuario.nome }}</h3>
+      <p class="text-muted">{{ usuario.email }}</p>
     </div>
   </div>
 
@@ -94,19 +94,19 @@
   <form method="POST" action="{{ url_for('perfil') }}">
     <div class="mb-3">
       <label class="form-label">Nome</label>
-      <input type="text" class="form-control" name="nome" value="João Silva" required>
+      <input type="text" class="form-control" name="nome" value="{{ usuario.nome }}" required>
     </div>
     <div class="mb-3">
       <label class="form-label">Email</label>
-      <input type="email" class="form-control" name="email" value="joao@email.com" required>
+      <input type="email" class="form-control" name="email" value="{{ usuario.email }}" required>
     </div>
     <div class="mb-3">
       <label class="form-label">Telefone</label>
-      <input type="text" class="form-control" name="telefone" value="(11) 99999-9999">
+      <input type="text" class="form-control" name="telefone" value="{{ usuario.telefone }}">
     </div>
     <div class="mb-3">
       <label class="form-label">Endereço</label>
-      <input type="text" class="form-control" name="endereco" value="Rua Exemplo, 123">
+      <input type="text" class="form-control" name="endereco" value="{{ usuario.endereco }}">
     </div>
 
     <!-- Botão Salvar Alterações -->

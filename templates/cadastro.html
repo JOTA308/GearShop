@@ -1,194 +1,87 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cadastro - GearShop</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-   font-family: Arial, sans-serif;
-   background: linear-gradient(135deg, #3498db, #2ecc71);
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   height: 100vh;
-   margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg,#3498db,#2ecc71);
+      min-height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      margin:0;
     }
     .container {
-      background-color: #fff;
-      width: 380px;
-      padding: 40px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-      text-align: center;
+      background:#fff;
+      width:100%;
+      max-width:420px;
+      padding:36px;
+      border-radius:12px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.18);
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: bold;
-      margin-bottom: 30px;
+    .logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:18px; }
+    .logo img { width:36px; }
+    h2 { text-align:center; margin-bottom:6px; color:#222; }
+    p.lead { text-align:center; color:#666; font-size:14px; margin-bottom:18px; }
+    label { font-size:13px; color:#333; display:block; margin-bottom:6px; font-weight:600; }
+    input[type="text"], input[type="password"], input[type="date"], input[type="email"] {
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #d5dbe0;
+      border-radius:8px;
+      margin-bottom:14px;
+      font-size:14px;
     }
-
-    .logo img {
-      width: 32px;
-      margin-right: 10px;
-    }
-
-    h2 {
-      margin: 0 0 10px;
-    }
-
-    .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 10px;
-      transition: background 0.2s;
-    }
-
-    .google-btn:hover {
-      background-color: #f5f5f5;
-    }
-
-    .google-btn img {
-      width: 18px;
-      margin-right: 8px;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 16px 0;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #ccc;
-    }
-
-    .divider span {
-      padding: 0 10px;
-      font-size: 12px;
-      color: #666;
-    }
-
-    form {
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: #333;
-    }
-
-    input[type="text"], input[type="password"], input[type="date"] {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-    }
-
-    .password-info {
-      font-size: 12px;
-      color: #555;
-      margin-bottom: 20px;
-    }
-
-    .password-info p {
-      margin: 4px 0;
-    }
-
-    .btn-cadastrar {
-      width: 100%;
-      background-color: #007bff;
-      border: none;
-      color: white;
-      padding: 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 15px;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
-
-    .btn-cadastrar:hover {
-      background-color: #0069d9;
-    }
-
-    .login-link {
-      margin-top: 20px;
-      font-size: 13px;
-    }
-
-    .login-link a {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .login-link a:hover {
-      text-decoration: underline;
-    }
+    input:focus { outline:none; border-color:#3498db; box-shadow:0 0 6px rgba(52,152,219,0.18); }
+    .password-info { font-size:13px; color:#555; background:#fbfbfb; padding:10px 12px; border-radius:8px; border-left:3px solid #2ecc71; margin-bottom:16px; }
+    .btn { width:100%; padding:12px; background:#3498db; color:#fff; border:none; font-weight:700; border-radius:8px; cursor:pointer; transition:transform .12s, background .12s; }
+    .btn:hover { transform:translateY(-2px); background:#2ecc71; }
+    .login-link { text-align:center; margin-top:14px; font-size:14px; color:#555; }
+    .login-link a { color:#3498db; text-decoration:none; font-weight:600; }
+    .error { color:#b00020; font-size:13px; margin-bottom:10px; display:none; }
+    .success { color:#08660d; font-size:13px; margin-bottom:10px; display:none; }
   </style>
 </head>
 <body>
-
-  <div class="container">
+  <div class="container" role="main">
     <div class="logo">
-      <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="GearShop Logo" />
-      GEARSHOP
+      <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="Logo GearShop">
+      <strong>GEARSHOP</strong>
     </div>
 
-    <h2>Crie a sua conta</h2>
+    <h2>Crie sua conta</h2>
+    <p class="lead">Preencha os dados abaixo para se cadastrar.</p>
 
-    <div class="google-btn">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
-      Entrar com Google
-    </div>
+    <!-- área de mensagens (injetável pelo Flask se quiser) -->
+    <div id="message" aria-live="polite"></div>
 
-    <div class="divider"><span>ou</span></div>
-
-    <p style="font-size:13px; color:#555; margin-bottom:15px;">Nos informe alguns dados para efetuar o cadastro</p>
-
-    <form>
+    <form id="cadForm" action="{{ url_for('cadastro') }}" method="post" novalidate>
       <label for="cpf">CPF</label>
-      <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" />
+      <!-- máscara: 000.000.000-00, maxlength 14 -->
+      <input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" maxlength="14" required aria-describedby="cpfHelp" autocomplete="off">
 
-      <label for="nome">Nome Completo</label>
-      <input type="text" id="nome" name="nome" placeholder="Seu nome completo" />
+      <label for="nome">Nome completo</label>
+      <input id="nome" name="nome" type="text" placeholder="Seu nome completo" required>
 
-      <label for="nascimento">Data de Nascimento</label>
-      <input type="text" id="nascimento" name="nascimento" placeholder="dd/mm/aaaa" />
+      <label for="nascimento">Data de nascimento</label>
+      <input id="nascimento" name="nascimento" type="date" required>
 
       <label for="senha">Senha</label>
-      <input type="password" id="senha" name="senha" placeholder="Digite uma senha" />
+      <input id="senha" name="senha" type="password" placeholder="Digite uma senha" required>
 
       <div class="password-info">
-        <p>Para sua segurança, crie uma senha com no mínimo:</p>
-        <p>✔ 8 ou mais caracteres</p>
-        <p>✔ Uma letra maiúscula</p>
-        <p>✔ Uma letra minúscula</p>
-        <p>✔ Um número</p>
-        <p>✔ Um caractere especial (exemplo: @ ! $ & #)</p>
+        <strong>Dica:</strong> sua senha deve ter no mínimo 8 caracteres, incluir letras e números.
       </div>
 
-      <button type="submit" class="btn-cadastrar">Cadastrar</button>
+      <div id="error" class="error" role="alert"></div>
+      <div id="success" class="success" role="status"></div>
+
+      <button id="submitBtn" class="btn" type="submit">Cadastrar</button>
     </form>
 
     <div class="login-link">
@@ -196,5 +89,61 @@
     </div>
   </div>
 
+<script>
+/* Máscara simples para CPF (formato 000.000.000-00) */
+function cpfMask(value){
+  const digits = value.replace(/\D/g,'').slice(0,11);
+  const part1 = digits.slice(0,3);
+  const part2 = digits.slice(3,6);
+  const part3 = digits.slice(6,9);
+  const part4 = digits.slice(9,11);
+  let out = part1;
+  if(part2) out += '.' + part2;
+  if(part3) out += '.' + part3;
+  if(part4) out += '-' + part4;
+  return out;
+}
+const cpfInput = document.getElementById('cpf');
+cpfInput.addEventListener('input', (e) => {
+  const pos = e.target.selectionStart;
+  e.target.value = cpfMask(e.target.value);
+  /* tentar manter cursor razoavelmente */
+  if (pos) e.target.setSelectionRange(pos, pos);
+});
+
+/* Validação CPF frontend: apenas checa se tem 11 dígitos (server fará checksum) */
+function onlyDigits(str){ return str.replace(/\D/g,''); }
+
+const form = document.getElementById('cadForm');
+const errorBox = document.getElementById('error');
+const successBox = document.getElementById('success');
+const submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', (ev) => {
+  errorBox.style.display = 'none';
+  successBox.style.display = 'none';
+
+  const cpf = onlyDigits(cpfInput.value);
+  if(cpf.length !== 11){
+    ev.preventDefault();
+    errorBox.textContent = 'CPF inválido: certifique-se de inserir 11 dígitos.';
+    errorBox.style.display = 'block';
+    cpfInput.focus();
+    return false;
+  }
+
+  const senha = document.getElementById('senha').value || '';
+  if(senha.length < 8){
+    ev.preventDefault();
+    errorBox.textContent = 'A senha deve ter pelo menos 8 caracteres.';
+    errorBox.style.display = 'block';
+    document.getElementById('senha').focus();
+    return false;
+  }
+
+  // permitimos submissão; backend fará validação completa (checksum e duplicidade)
+  return true;
+});
+</script>
 </body>
 </html>
