@@ -67,7 +67,7 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg">
   <div class="container">
-    <a class="navbar-brand" href="{{ url_for('home') }}">GEARSHOP</a>
+    <a class="navbar-brand" href="{{ url_for('index') }}">GEARSHOP</a>
     <div class="ms-auto d-flex gap-2">
       {% if session.get('usuario') %}
         <a href="{{ url_for('perfil') }}" class="btn btn-outline-light">Perfil</a>
@@ -114,7 +114,7 @@
   </form>
 
   <!-- Botão Cadastrar Produto -->
-  <a href="{{ url_for('cadastrar') }}" class="btn-cadastrar">
+  <a href="{{ url_for('cadastro') }}" class="btn-cadastrar">
     <i class="bi bi-plus-circle"></i> Cadastrar Produto
   </a>
 </div>

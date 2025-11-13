@@ -202,14 +202,14 @@
 
     <!-- Formulário -->
     <form action="{{ url_for('login') }}" method="post">
-      <input type="text" name="usuario" placeholder="Usuário" required>
+      <input type="email" name="email" placeholder="E-mail" required>
       <input type="password" name="senha" placeholder="Senha" required>
       <button type="submit">Entrar</button>
     </form>
 
     <a href="{{ url_for('senha') }}">Esqueceu sua senha?</a>
     <a href="{{ url_for('cadastro') }}">Ainda não tem uma conta? Cadastre-se</a>
-    <a href="{{ url_for('home') }}">Voltar para o início</a>
+    <a href="{{ url_for('index') }}">Voltar para o início</a>
   </div>
 
 </body>
