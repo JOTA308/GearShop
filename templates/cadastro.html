@@ -69,7 +69,7 @@
       <input id="nome" name="nome" type="text" placeholder="Seu nome completo" required>
 
       <label for="telefone">Telefone</label>
-      <input type="text" id="telefone" name="telefone" class="form-control" placeholder="(11) 99999-9999" required>
+      <input type="text" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
 
       <label for="email">E-mail</label>
       <input id="email" name="email" type="email" placeholder="seuemail@exemplo.com" required>
@@ -96,6 +96,7 @@
   </div>
 
 <script>
+// ---------------- CPF MASK ----------------
 function cpfMask(value){
   const digits = value.replace(/\D/g,'').slice(0,11);
   const part1 = digits.slice(0,3);
@@ -114,6 +115,30 @@ cpfInput.addEventListener('input', (e) => {
   e.target.value = cpfMask(e.target.value);
   if (pos) e.target.setSelectionRange(pos, pos);
 });
+
+// ---------------- TELEFONE MASK ----------------
+function telefoneMask(value){
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  const d1 = digits.slice(0, 2);
+  const d2 = digits.slice(2, 7);
+  const d3 = digits.slice(7, 11);
+
+  let out = "";
+  if (d1) out = "(" + d1;
+  if (d1.length == 2) out += ") ";
+  if (d2) out += d2;
+  if (d3) out += "-" + d3;
+
+  return out;
+}
+const telInput = document.getElementById("telefone");
+telInput.addEventListener("input", (e) => {
+  const pos = e.target.selectionStart;
+  e.target.value = telefoneMask(e.target.value);
+  if (pos) e.target.setSelectionRange(pos, pos);
+});
+
+// ---------------- VALIDAR NO ENVIO ----------------
 function onlyDigits(str){ return str.replace(/\D/g,''); }
 
 const form = document.getElementById('cadForm');
@@ -121,14 +146,28 @@ const errorBox = document.getElementById('error');
 
 form.addEventListener('submit', (ev) => {
   errorBox.style.display = 'none';
+
+  // CPF
   const cpf = onlyDigits(cpfInput.value);
   if(cpf.length !== 11){
     ev.preventDefault();
-    errorBox.textContent = 'CPF inválido: certifique-se de inserir 11 dígitos.';
+    errorBox.textContent = 'CPF inválido: insira 11 dígitos.';
     errorBox.style.display = 'block';
     cpfInput.focus();
     return false;
   }
+
+  // TELEFONE
+  const tel = onlyDigits(telInput.value);
+  if (tel.length < 10 || tel.length > 11) {
+    ev.preventDefault();
+    errorBox.textContent = 'Telefone inválido. Use (11) 99999-9999.';
+    errorBox.style.display = 'block';
+    telInput.focus();
+    return false;
+  }
+
+  // SENHA
   const senha = document.getElementById('senha').value || '';
   if(senha.length < 8){
     ev.preventDefault();
@@ -137,8 +176,11 @@ form.addEventListener('submit', (ev) => {
     document.getElementById('senha').focus();
     return false;
   }
+
   return true;
 });
 </script>
+
 </body>
 </html>
+

@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import mysql.connector
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 app.secret_key = 'chave_super_secreta_fixa_gearshop'
@@ -20,14 +22,30 @@ db_config = {
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+# ------------------------------------
+# CONFIGURAÇÃO DE UPLOAD
+# ------------------------------------
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ------------------------------------
 # HOME
 # ------------------------------------
-@app.route("/")
+@app.route("/", endpoint='home')
+@app.route("/index", endpoint='indexx')
 def index():
-    return render_template("indexx.html")
-
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM produtos ORDER BY id DESC")
+    produtos = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("indexx.html", produtos=produtos)
 
 # ------------------------------------
 # LOGIN
@@ -44,25 +62,25 @@ def login():
 
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
-
-        cursor.execute("SELECT cpf, nome, senha FROM usuarios WHERE email=%s", (email,))
+        cursor.execute("SELECT * FROM usuarios WHERE email=%s", (email,))
         usuario = cursor.fetchone()
-
         cursor.close()
         db.close()
 
         if usuario and check_password_hash(usuario['senha'], senha):
             session['usuario'] = {
                 'cpf': usuario['cpf'],
-                'nome': usuario['nome']
+                'nome': usuario['nome'],
+                'email': usuario['email'],
+                'telefone': usuario['telefone'],
+                'endereco': usuario.get('endereco', '')
             }
+            session.permanent = True
             return redirect(url_for('perfil'))
         else:
             flash("E-mail ou senha incorretos!", "erro")
-            return render_template('login.html')
 
     return render_template('login.html')
-
 
 # ------------------------------------
 # CADASTRO
@@ -70,50 +88,41 @@ def login():
 @app.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar():
     if request.method == 'POST':
+        cpf = request.form.get('cpf', '').strip()
+        nome = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        nascimento = request.form.get('nascimento', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        senha = request.form.get('senha', '')
+        endereco = ""
+
+        if not all([cpf, nome, email, nascimento, telefone, senha]):
+            flash("Preencha todos os campos!", "erro")
+            return render_template("cadastro.html")
+
+        if len(senha) < 8:
+            flash("A senha deve ter pelo menos 8 caracteres!", "erro")
+            return render_template("cadastro.html")
+
+        senha_hash = generate_password_hash(senha)
+
         try:
-            cpf = request.form.get('cpf', '').strip()
-            nome = request.form.get('nome', '').strip()
-            email = request.form.get('email', '').strip()
-            nascimento = request.form.get('nascimento', '').strip()
-            telefone = request.form.get('telefone', '').strip()
-            senha = request.form.get('senha', '')
-            endereco = ""  # endereço padrão vazio
-
-            if not all([cpf, nome, email, nascimento, telefone, senha]):
-                flash("Preencha todos os campos!", "erro")
-                return render_template("cadastro.html")
-
-            if len(senha) < 8:
-                flash("A senha deve ter pelo menos 8 caracteres!", "erro")
-                return render_template("cadastro.html")
-
-            senha_hash = generate_password_hash(senha)
-
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            sql = """
+            db = get_db_connection()
+            cursor = db.cursor()
+            cursor.execute("""
                 INSERT INTO usuarios (cpf, nome, email, telefone, senha, nascimento, endereco)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (cpf, nome, email, telefone, senha_hash, nascimento, endereco)
-
-            cursor.execute(sql, values)
-            conn.commit()
-
+            """, (cpf, nome, email, telefone, senha_hash, nascimento, endereco))
+            db.commit()
             cursor.close()
-            conn.close()
-
+            db.close()
             flash("Conta criada com sucesso!", "sucesso")
             return redirect('/login')
-
         except mysql.connector.Error as e:
             flash(f"Erro ao cadastrar: {e}", "erro")
             return render_template("cadastro.html")
 
     return render_template("cadastro.html")
-
-
 
 # ------------------------------------
 # PERFIL
@@ -125,141 +134,101 @@ def perfil():
         return redirect(url_for('login'))
 
     cpf = session['usuario']['cpf']
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Atualizar dados
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
         telefone = request.form.get('telefone')
         endereco = request.form.get('endereco', '')
 
-        # Se a coluna endereço NÃO existir no banco, evita erro
-        try:
-            cursor.execute("""
-                UPDATE usuarios
-                SET nome=%s, email=%s, telefone=%s, endereco=%s
-                WHERE cpf=%s
-            """, (nome, email, telefone, endereco, cpf))
-
-        except mysql.connector.Error:
-            # Atualiza sem endereço se a coluna não existir
-            cursor.execute("""
-                UPDATE usuarios
-                SET nome=%s, email=%s, telefone=%s
-                WHERE cpf=%s
-            """, (nome, email, telefone, cpf))
-
-        conn.commit()
+        cursor.execute("""
+            UPDATE usuarios
+            SET nome=%s, email=%s, telefone=%s, endereco=%s
+            WHERE cpf=%s
+        """, (nome, email, telefone, endereco, cpf))
+        db.commit()
+        session['usuario'].update({'nome': nome, 'email': email, 'telefone': telefone, 'endereco': endereco})
         flash("Dados atualizados com sucesso!", "sucesso")
 
-    # Buscar dados do usuário
-    try:
-        cursor.execute("SELECT cpf, nome, email, telefone, endereco FROM usuarios WHERE cpf=%s", (cpf,))
-    except mysql.connector.Error:
-        cursor.execute("SELECT cpf, nome, email, telefone FROM usuarios WHERE cpf=%s", (cpf,))
-
+    cursor.execute("SELECT cpf, nome, email, telefone, endereco FROM usuarios WHERE cpf=%s", (cpf,))
     usuario = cursor.fetchone()
-
     cursor.close()
-    conn.close()
-
-    session['usuario'] = usuario
+    db.close()
 
     return render_template('perfil.html', usuario=usuario)
 
 # ------------------------------------
-# REDEFINIR SENHA
+# ANUNCIAR PRODUTO
 # ------------------------------------
-@app.route('/senha', methods=['GET', 'POST'])
-def senha():
-    if request.method == 'POST':
-        email = request.form.get('email', '').strip()
-        nova_senha = request.form.get('nova_senha', '')
-
-        if not email or not nova_senha:
-            flash("Preencha todos os campos!", "erro")
-            return render_template('senha.html')
-
-        if len(nova_senha) < 8:
-            flash("A nova senha deve ter pelo menos 8 caracteres!", "erro")
-            return render_template('senha.html')
-
-        nova_senha_hash = generate_password_hash(nova_senha)
-
-        db = get_db_connection()
-        cursor = db.cursor()
-
-        try:
-            cursor.execute("UPDATE usuarios SET senha=%s WHERE email=%s",
-                           (nova_senha_hash, email))
-            db.commit()
-            flash("Senha atualizada com sucesso!", "sucesso")
-
-        except mysql.connector.Error as erro:
-            db.rollback()
-            flash(f"Erro ao atualizar senha: {erro}", "erro")
-
-        finally:
-            cursor.close()
-            db.close()
-
-        return redirect(url_for('login'))
-
-    return render_template('senha.html')
-
-
-# ------------------------------------
-# PRODUTOS
-# ------------------------------------
-@app.route('/cadastrar_produto', methods=['GET', 'POST'])
-def cadastrar_produto():
+@app.route('/anunciar', methods=['GET', 'POST'])
+def anunciar():
     if 'usuario' not in session:
-        flash("Faça login para cadastrar um produto!", "erro")
+        flash("Faça login para anunciar um produto!", "erro")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
+        categoria = request.form.get('categoria', '').strip()
         preco = request.form.get('preco', '').strip()
-        imagem = request.form.get('imagem_url', '').strip()
+        condicao = request.form.get('condicao', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+        localizacao = request.form.get('localizacao', '').strip()
+        usuario_cpf = session['usuario']['cpf']
 
-        if not all([nome, preco, imagem]):
+        if not all([nome, categoria, preco, condicao, descricao, localizacao]):
             flash("Preencha todos os campos!", "erro")
-            return render_template('cadastrar_produto.html')
+            return render_template('anunciar.html')
+
+        # Upload da imagem
+        imagem_file = request.files.get('imagem')
+        if imagem_file and allowed_file(imagem_file.filename):
+            filename = secure_filename(imagem_file.filename)
+            imagem_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            imagem_file.save(imagem_path)
+            imagem_db = f"/{imagem_path.replace(os.sep, '/')}"
+        else:
+            imagem_db = "/static/uploads/placeholder.png"  # fallback
 
         db = get_db_connection()
         cursor = db.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO produtos (nome, categoria, preco, condicao, descricao, localizacao, imagem_url, usuario_cpf)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (nome, categoria, preco, condicao, descricao, localizacao, imagem_db, usuario_cpf))
+            db.commit()
+            flash("Produto anunciado com sucesso!", "sucesso")
+        except mysql.connector.Error as e:
+            db.rollback()
+            flash(f"Erro ao anunciar produto: {e}", "erro")
+        finally:
+            cursor.close()
+            db.close()
 
-        cursor.execute("""
-            INSERT INTO produtos (nome, preco, imagem_url)
-            VALUES (%s, %s, %s)
-        """, (nome, preco, imagem))
+        return redirect(url_for('indexx'))
 
-        db.commit()
-        cursor.close()
-        db.close()
+    return render_template('anunciar.html')
 
-        flash("Produto cadastrado com sucesso!", "sucesso")
-        return redirect(url_for('perfil'))
-
-    return render_template('cadastrar_produto.html')
-
-
+# ------------------------------------
+# CARRINHO
+# ------------------------------------
 @app.route('/carrinho')
 def carrinho():
     return render_template('carrinho.html')
 
-
+# ------------------------------------
+# LOGOUT
+# ------------------------------------
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Você saiu da conta.", "sucesso")
     return redirect(url_for('login'))
 
-
+# ------------------------------------
 # RUN
+# ------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)
-
