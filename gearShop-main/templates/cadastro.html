@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cadastro - GearShop</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg,#3498db,#2ecc71);
+      min-height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      margin:0;
+    }
+    .container { background:#fff; width:100%; max-width:420px; padding:36px; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.18); }
+    .logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:18px; }
+    .logo img { width:36px; }
+    h2 { text-align:center; margin-bottom:6px; color:#222; }
+    p.lead { text-align:center; color:#666; font-size:14px; margin-bottom:18px; }
+    label { font-size:13px; color:#333; display:block; margin-bottom:6px; font-weight:600; }
+    input[type="text"], input[type="password"], input[type="date"], input[type="email"] {
+      width:100%; padding:10px 12px; border:1px solid #d5dbe0;
+      border-radius:8px; margin-bottom:14px; font-size:14px;
+    }
+    input:focus { outline:none; border-color:#3498db; box-shadow:0 0 6px rgba(52,152,219,0.18); }
+    .password-info { font-size:13px; color:#555; background:#fbfbfb; padding:10px 12px; border-radius:8px; border-left:3px solid #2ecc71; margin-bottom:16px; }
+    .btn {
+      width:100%; padding:12px; background:#3498db; color:#fff;
+      border:none; font-weight:700; border-radius:8px;
+      cursor:pointer; transition:transform .12s, background .12s;
+    }
+    .btn:hover { transform:translateY(-2px); background:#2ecc71; }
+    .login-link { text-align:center; margin-top:14px; font-size:14px; color:#555; }
+    .login-link a { color:#3498db; text-decoration:none; font-weight:600; }
+    .error { color:#b00020; font-size:13px; margin-bottom:10px; display:none; }
+    .success { color:#08660d; font-size:13px; margin-bottom:10px; display:none; }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="logo">
+      <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="Logo GearShop">
+      <strong>GEARSHOP</strong>
+    </div>
+
+    <h2>Crie sua conta</h2>
+    <p class="lead">Preencha os dados abaixo para se cadastrar.</p>
+
+    <!-- mensagens do Flask -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div>
+          {% for category, msg in messages %}
+            <div class="{{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form id="cadForm" action="{{ url_for('cadastrar') }}" method="post" novalidate>
+      <label for="cpf">CPF</label>
+      <input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" maxlength="14" required autocomplete="off">
+
+      <label for="nome">Nome completo</label>
+      <input id="nome" name="nome" type="text" placeholder="Seu nome completo" required>
+
+      <label for="telefone">Telefone</label>
+      <input type="text" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" placeholder="seuemail@exemplo.com" required>
+
+      <label for="endereco">Endereço</label>
+      <input id="endereco" name="endereco" type="text" placeholder="Rua, número, bairro, cidade" >
+
+      <label for="data_nasc">Data de nascimento</label>
+      <input id="data_nasc" name="nascimento" type="date" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" placeholder="Digite uma senha" required>
+
+      <div class="password-info">
+        <strong>Dica:</strong> sua senha deve ter no mínimo 8 caracteres, incluir letras e números.
+      </div>
+
+      <div id="error" class="error" role="alert"></div>
+      <div id="success" class="success" role="status"></div>
+
+      <button id="submitBtn" class="btn" type="submit">Cadastrar</button>
+    </form>
+
+    <div class="login-link">
+      Já tem uma conta? <a href="{{ url_for('login') }}">Entrar</a>
+    </div>
+  </div>
+
+<script>
+// ---------------- CPF MASK ----------------
+function cpfMask(value){
+  const digits = value.replace(/\D/g,'').slice(0,11);
+  const part1 = digits.slice(0,3);
+  const part2 = digits.slice(3,6);
+  const part3 = digits.slice(6,9);
+  const part4 = digits.slice(9,11);
+  let out = part1;
+  if(part2) out += '.' + part2;
+  if(part3) out += '.' + part3;
+  if(part4) out += '-' + part4;
+  return out;
+}
+function caretFrom(raw, formatted, caretRaw){
+  let di = 0;
+  for(let i=0;i<caretRaw;i++){ if(/\d/.test(raw[i])) di++; }
+  if(di===0) return 0;
+  let c=0;
+  for(let i=0;i<formatted.length;i++){
+    if(/\d/.test(formatted[i])) c++;
+    if(c===di) return i+1;
+  }
+  return formatted.length;
+}
+const cpfInput = document.getElementById('cpf');
+cpfInput.addEventListener('input', (e) => {
+  const raw = e.target.value;
+  const caret = e.target.selectionStart ?? raw.length;
+  const masked = cpfMask(raw);
+  e.target.value = masked;
+  const np = caretFrom(raw, masked, caret);
+  e.target.setSelectionRange(np, np);
+});
+
+// ---------------- TELEFONE MASK ----------------
+function telefoneMask(value){
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  const d1 = digits.slice(0, 2);
+  const d2 = digits.slice(2, 7);
+  const d3 = digits.slice(7, 11);
+
+  let out = "";
+  if (d1) out = "(" + d1;
+  if (d1.length == 2) out += ") ";
+  if (d2) out += d2;
+  if (d3) out += "-" + d3;
+
+  return out;
+}
+const telInput = document.getElementById("telefone");
+telInput.addEventListener("input", (e) => {
+  const raw = e.target.value;
+  const caret = e.target.selectionStart ?? raw.length;
+  const masked = telefoneMask(raw);
+  e.target.value = masked;
+  const np = caretFrom(raw, masked, caret);
+  e.target.setSelectionRange(np, np);
+});
+
+// ---------------- VALIDAR NO ENVIO ----------------
+function onlyDigits(str){ return str.replace(/\D/g,''); }
+
+const form = document.getElementById('cadForm');
+const errorBox = document.getElementById('error');
+
+form.addEventListener('submit', (ev) => {
+  errorBox.style.display = 'none';
+
+  // CPF
+  const cpf = onlyDigits(cpfInput.value);
+  if(cpf.length !== 11){
+    ev.preventDefault();
+    errorBox.textContent = 'CPF inválido: insira 11 dígitos.';
+    errorBox.style.display = 'block';
+    cpfInput.focus();
+    return false;
+  }
+
+  // TELEFONE
+  const tel = onlyDigits(telInput.value);
+  if (tel.length < 10 || tel.length > 11) {
+    ev.preventDefault();
+    errorBox.textContent = 'Telefone inválido. Use (11) 99999-9999.';
+    errorBox.style.display = 'block';
+    telInput.focus();
+    return false;
+  }
+
+  // SENHA
+  const senha = document.getElementById('senha').value || '';
+  if(senha.length < 8){
+    ev.preventDefault();
+    errorBox.textContent = 'A senha deve ter pelo menos 8 caracteres.';
+    errorBox.style.display = 'block';
+    document.getElementById('senha').focus();
+    return false;
+  }
+
+  return true;
+});
+</script>
+
+</body>
+</html>
